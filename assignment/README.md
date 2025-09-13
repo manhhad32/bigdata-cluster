@@ -38,9 +38,9 @@
     # job Spark start
     docker exec spark-master /spark/bin/spark-submit --master spark://spark-master:7077 /wordcount.py
     ```
-    - from master-spark
+    - from spark-master
     ```sh
-    docker exec -it master-spark /bin/bash
+    docker exec -it spark-master /bin/bash
     spark/bin/spark-submit --master spark://spark-master:7077 wordcount.py
     ```
 
