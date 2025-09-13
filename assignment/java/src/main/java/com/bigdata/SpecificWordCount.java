@@ -1,16 +1,17 @@
 package com.bigdata;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.SparkSession;
-import scala.Tuple2;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import scala.Tuple2;
 
 public class SpecificWordCount {
 
@@ -23,7 +24,7 @@ public class SpecificWordCount {
         JavaSparkContext sc = new JavaSparkContext(spark.sparkContext());
 
         // --- BƯỚC 1: Đọc danh sách các từ cần đếm và broadcast nó ---
-        String targetWordsPath = "hdfs://namenode:9000/test/input/input.txt";
+        String targetWordsPath = "hdfs://namenode:9000/data/input/input.txt";
         
         // Đọc file, tách thành các từ, và thu thập danh sách về Driver
         List<String> targetWordsList = spark.read().textFile(targetWordsPath).javaRDD()
@@ -35,7 +36,7 @@ public class SpecificWordCount {
         Broadcast<Set<String>> broadcastTargetWords = sc.broadcast(new HashSet<>(targetWordsList));
 
         // --- BƯỚC 2: Đọc file văn bản chính ---
-        String mainTextPath = "hdfs://namenode:9000/data.txt";
+        String mainTextPath = "hdfs://namenode:9000/data/data.txt";
         JavaRDD<String> lines = spark.read().textFile(mainTextPath).javaRDD();
 
         // --- BƯỚC 3: Tách từ, lọc theo danh sách broadcast, và đếm ---
@@ -56,7 +57,7 @@ public class SpecificWordCount {
         System.out.println("---------------------------------------");
 
         // Ghi kết quả ra HDFS theo cách song song (chuẩn)
-        String outputPath = "hdfs://namenode:9000/test/wordcount_output_java";
+        String outputPath = "hdfs://namenode:9000/data/wordcount_output_java";
         counts.saveAsTextFile(outputPath);
         
         System.out.println("Hoan thanh dem tu! Kiem tra ket qua tai thu muc " + outputPath + " tren HDFS.");
