@@ -16,9 +16,9 @@
     hdfs dfs -mkdir -p /data/input
     ```
     - check again:
-      ```sh
-      hdfs dfs -ls /data
-      ```
+    ```sh
+    hdfs dfs -ls /data
+    ```
   - ### 2. copy data into namenode (master hadoop)
     - from local - using docker cmd
     ```sh
