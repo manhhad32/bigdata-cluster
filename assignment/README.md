@@ -46,8 +46,16 @@
     ```sh
     docker exec -it spark-master /bin/bash
     ```
+    - run code python
     ```sh
     spark/bin/spark-submit --master spark://spark-master:7077 wordcount.py
+    ```
+    - run jar file 
+    ```sh
+    spark/bin/spark-submit \
+      --class com.bigdata.SpecificWordCount \
+      --master spark://spark-master:7077 \
+      /SpecificWordCount-1.0-jar-with-dependencies.jar
     ```
 
   
