@@ -129,3 +129,9 @@ docker exec namenode hdfs dfs -mkdir -p /user/test
 echo "Hello Big Data" > my_file.txt
 docker cp my_file.txt namenode:/
 docker exec namenode hdfs dfs -put /my_file.txt
+```
+
+***Sau Khi start NiFi nếu không login được bằng user/pass đã setup thì tìm giá trị default bằng cách:
+```sh
+docker compose logs nifi | grep "Generated"
+```
