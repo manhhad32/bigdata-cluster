@@ -13,7 +13,7 @@ import scala.Tuple2;
 
 /**
  * Chương trình Spark để tính độ support của từng item,
- * sắp xếp kết quả tăng dần, định dạng, tự động xóa output cũ
+ * sắp xếp kết quả tăng dần, định dạng,
  * và lưu vào một file duy nhất.
  */
 public class ItemSetCount {
