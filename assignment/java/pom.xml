@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.bigdata</groupId>
-    <artifactId>SpecificWordCount</artifactId>
+    <artifactId>WordCount</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
 
@@ -47,7 +47,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.example.SpecificWordCount</mainClass>
+                            <mainClass>com.bigdata.WordCount</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
