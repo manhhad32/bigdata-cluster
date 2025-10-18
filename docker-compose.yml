@@ -120,7 +120,6 @@ services:
       - big-data-net
 
   # --- DỊCH VỤ ETL MỚI ---
-  
   postgres-db:
     image: postgres:15-alpine
     container_name: postgres-db
@@ -173,16 +172,7 @@ services:
     networks:
       - big-data-net
 
-  # --- CỤM HIVE & HBASE (ĐÃ BỔ SUNG) ---
-  hive-metastore-postgresql:
-    image: bde2020/hive-metastore-postgresql:2.3.0
-    container_name: hive-metastore-postgresql
-    restart: always
-    volumes:
-      - hive_metastore_postgres_data:/var/lib/postgresql/data
-    networks:
-      - big-data-net
-
+  # --- CỤM HIVE & HBASE ---
   hive-metastore:
     image: bde2020/hive:2.3.2-postgresql-metastore
     container_name: hive-metastore
@@ -190,13 +180,12 @@ services:
     env_file:
       - ./hadoop.env
     environment:
-      SERVICE_PRECONDITION: "namenode:9870 datanode1:9864 datanode2:9864 datanode3:9864 hive-metastore-postgresql:5432"
+      - HIVE_CORE_CONF_javax_jdo_option_ConnectionURL=jdbc:postgresql://postgres-db:5432/etl_db
+      - HIVE_CORE_CONF_javax_jdo_option_ConnectionUserName=etl_user
+      - HIVE_CORE_CONF_javax_jdo_option_ConnectionPassword=etlUser@123
+      - SERVICE_PRECONDITION=namenode:9870 postgres-db:5432
     depends_on:
-      - hive-metastore-postgresql
-      - namenode
-      - datanode1
-      - datanode2
-      - datanode3
+      - postgres-db
     ports:
       - "9083:9083"
     networks:
@@ -209,8 +198,10 @@ services:
     env_file:
       - ./hadoop.env
     environment:
-      - HIVE_CORE_CONF_javax_jdo_option_ConnectionURL=jdbc:postgresql://hive-metastore-postgresql/metastore
-      SERVICE_PRECONDITION: "hive-metastore:9083"
+      - HIVE_CORE_CONF_javax_jdo_option_ConnectionURL=jdbc:postgresql://postgres-db:5432/etl_db
+      - HIVE_CORE_CONF_javax_jdo_option_ConnectionUserName=etl_user
+      - HIVE_CORE_CONF_javax_jdo_option_ConnectionPassword=etlUser@123
+      - SERVICE_PRECONDITION=hive-metastore:9083
     depends_on:
       - hive-metastore
     ports:
@@ -231,47 +222,40 @@ services:
       - big-data-net
 
   hbase-master:
-    image: bde2020/hbase-master:1.2.6
+    build: ./hbase
+    hostname: hbase-master
     container_name: hbase-master
     restart: always
-    env_file:
-      - ./hadoop.env
+    ports:
+      - "16000:16000"
+      - "16010:16010"
     environment:
       - HBASE_CONF_hbase_rootdir=hdfs://namenode:9000/hbase
       - HBASE_CONF_hbase_cluster_distributed=true
       - HBASE_CONF_hbase_zookeeper_quorum=zookeeper
-      SERVICE_PRECONDITION: "namenode:9870 datanode1:9864 datanode2:9864 datanode3:9864 zookeeper:2181"
+    command: master
     depends_on:
-      - namenode
-      - datanode1
-      - datanode2
-      - datanode3
       - zookeeper
-    ports:
-      - "16000:16000"
-      - "16010:16010"
+      - namenode
     networks:
       - big-data-net
 
   hbase-regionserver:
-    image: bde2020/hbase-regionserver:1.2.6
+    build: ./hbase
+    hostname: hbase-regionserver
     container_name: hbase-regionserver
     restart: always
-    env_file:
-      - ./hadoop.env
-    environment:
-      - HBASE_CONF_hbase_master=hbase-master:16000
-      - HBASE_CONF_hbase_zookeeper_quorum=zookeeper
-      SERVICE_PRECONDITION: "hbase-master:16010"
-    depends_on:
-      - hbase-master
     ports:
       - "16020:16020"
       - "16030:16030"
+    environment:
+      - HBASE_CONF_hbase_master=hbase-master:16000
+      - HBASE_CONF_hbase_zookeeper_quorum=zookeeper
+    command: regionserver
+    depends_on:
+      - hbase-master
     networks:
       - big-data-net
-
-# --- ĐỊNH NGHĨA VOLUMES & NETWORKS ---
 
 volumes:
   hadoop_namenode:
@@ -281,8 +265,6 @@ volumes:
   postgres_data:
   nifi_data:
   nifi_conf:
-  # Volumes mới cho Hive và HBase
-  hive_metastore_postgres_data:
   zookeeper_data:
   zookeeper_log:
 
