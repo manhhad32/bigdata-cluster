@@ -1,6 +1,68 @@
 version: '3.8'
 
 services:
+  # --- CỤM HADOOP HDFS ---
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
+    container_name: namenode
+    restart: always
+    ports:
+      - "9870:9870" # Namenode UI
+      - "9000:9000" # Namenode Port
+    volumes:
+      - hadoop_namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=test
+    env_file:
+      - ./hadoop.env
+    networks:
+      - big-data-net
+
+  datanode1:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode1
+    restart: always
+    volumes:
+      - hadoop_datanode1:/hadoop/dfs/data
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    depends_on:
+      - namenode
+    env_file:
+      - ./hadoop.env
+    networks:
+      - big-data-net
+
+  datanode2:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode2
+    restart: always
+    volumes:
+      - hadoop_datanode2:/hadoop/dfs/data
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    depends_on:
+      - namenode
+    env_file:
+      - ./hadoop.env
+    networks:
+      - big-data-net
+      
+  datanode3:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+    container_name: datanode3
+    restart: always
+    volumes:
+      - hadoop_datanode3:/hadoop/dfs/data
+    environment:
+      SERVICE_PRECONDITION: "namenode:9870"
+    depends_on:
+      - namenode
+    env_file:
+      - ./hadoop.env
+    networks:
+      - big-data-net
+
   # --- CỤM KAFKA (KRaft) ---
   kafka1:
     image: confluentinc/cp-kafka:7.6.1
@@ -14,7 +76,7 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_LISTENERS: 'INTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:19092'
       KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka1:9092,EXTERNAL://localhost:19092'
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTLTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
       KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
@@ -65,12 +127,10 @@ services:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
     ports:
-      # Đã đổi cổng host từ 8081 sang 8090 để tránh xung đột với spark-worker-1
-      - "8090:8080"
+      - "8090:8080" # Truy cập Kafka UI tại http://localhost:8090
     depends_on: [kafka1, kafka2, kafka3]
     environment:
       KAFKA_CLUSTERS_0_NAME: 'local-kraft-cluster'
-      # Kết nối qua mạng nội bộ của Docker
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka1:9092,kafka2:9092,kafka3:9092'
     networks:
       - big-data-net
@@ -85,6 +145,9 @@ services:
       - "7077:7077" # Spark Master Port
     environment:
       - INIT_DAEMON_STEP=setup_spark
+    # Thêm env_file để Spark biết cụm HDFS
+    env_file:
+      - ./hadoop.env
     networks:
       - big-data-net
 
@@ -97,6 +160,8 @@ services:
       - "8081:8081" # Spark Worker 1 UI
     environment:
       - "SPARK_MASTER=spark://spark-master:7077"
+    env_file:
+      - ./hadoop.env
     networks:
       - big-data-net
 
@@ -109,6 +174,8 @@ services:
       - "8082:8081" # Spark Worker 2 UI
     environment:
       - "SPARK_MASTER=spark://spark-master:7077"
+    env_file:
+      - ./hadoop.env
     networks:
       - big-data-net
 
@@ -121,6 +188,8 @@ services:
       - "8083:8081" # Spark Worker 3 UI
     environment:
       - "SPARK_MASTER=spark://spark-master:7077"
+    env_file:
+      - ./hadoop.env
     networks:
       - big-data-net
 
@@ -128,3 +197,10 @@ services:
 networks:
   big-data-net:
     driver: bridge
+
+# Định nghĩa volumes cho HDFS
+volumes:
+  hadoop_namenode:
+  hadoop_datanode1:
+  hadoop_datanode2:
+  hadoop_datanode3:
