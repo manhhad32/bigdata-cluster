@@ -33,35 +33,35 @@ services:
     networks:
       - big-data-net
 
-  datanode2:
-    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
-    container_name: datanode2
-    restart: always
-    volumes:
-      - hadoop_datanode2:/hadoop/dfs/data
-    environment:
-      SERVICE_PRECONDITION: "namenode:9870"
-    depends_on:
-      - namenode
-    env_file:
-      - ./hadoop.env
-    networks:
-      - big-data-net
+#  datanode2:
+#    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+#    container_name: datanode2
+#    restart: always
+#    volumes:
+#      - hadoop_datanode2:/hadoop/dfs/data
+#    environment:
+#      SERVICE_PRECONDITION: "namenode:9870"
+#    depends_on:
+#      - namenode
+#    env_file:
+#      - ./hadoop.env
+#    networks:
+#      - big-data-net
       
-  datanode3:
-    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
-    container_name: datanode3
-    restart: always
-    volumes:
-      - hadoop_datanode3:/hadoop/dfs/data
-    environment:
-      SERVICE_PRECONDITION: "namenode:9870"
-    depends_on:
-      - namenode
-    env_file:
-      - ./hadoop.env
-    networks:
-      - big-data-net
+#  datanode3:
+#    image: bde2020/hadoop-datanode:2.0.0-hadoop3.2.1-java8
+#    container_name: datanode3
+#    restart: always
+#    volumes:
+#      - hadoop_datanode3:/hadoop/dfs/data
+#    environment:
+#      SERVICE_PRECONDITION: "namenode:9870"
+#    depends_on:
+#      - namenode
+#    env_file:
+#      - ./hadoop.env
+#    networks:
+#      - big-data-net
 
   # --- CỤM KAFKA (KRaft) ---
   kafka1:
@@ -79,6 +79,7 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
       KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      #KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093'
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
     networks:
       - big-data-net
@@ -99,6 +100,7 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
       KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      #KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093'
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
     networks:
       - big-data-net
@@ -128,10 +130,12 @@ services:
     container_name: kafka-ui
     ports:
       - "8090:8080" # Truy cập Kafka UI tại http://localhost:8090
-    depends_on: [kafka1, kafka2, kafka3]
+    #depends_on: [kafka1, kafka2, kafka3]
+    depends_on: [kafka1, kafka2]
     environment:
       KAFKA_CLUSTERS_0_NAME: 'local-kraft-cluster'
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka1:9092,kafka2:9092,kafka3:9092'
+      #KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka1:9092,kafka2:9092,kafka3:9092'
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka1:9092,kafka2:9092'
     networks:
       - big-data-net
 
@@ -165,33 +169,33 @@ services:
     networks:
       - big-data-net
 
-  spark-worker-2:
-    image: bde2020/spark-worker:3.3.0-hadoop3.3
-    container_name: spark-worker-2
-    depends_on:
-      - spark-master
-    ports:
-      - "8082:8081" # Spark Worker 2 UI
-    environment:
-      - "SPARK_MASTER=spark://spark-master:7077"
-    env_file:
-      - ./hadoop.env
-    networks:
-      - big-data-net
+#  spark-worker-2:
+#    image: bde2020/spark-worker:3.3.0-hadoop3.3
+#    container_name: spark-worker-2
+#    depends_on:
+#      - spark-master
+#    ports:
+#      - "8082:8081" # Spark Worker 2 UI
+#    environment:
+#      - "SPARK_MASTER=spark://spark-master:7077"
+#    env_file:
+#      - ./hadoop.env
+#    networks:
+#      - big-data-net
 
-  spark-worker-3:
-    image: bde2020/spark-worker:3.3.0-hadoop3.3
-    container_name: spark-worker-3
-    depends_on:
-      - spark-master
-    ports:
-      - "8083:8081" # Spark Worker 3 UI
-    environment:
-      - "SPARK_MASTER=spark://spark-master:7077"
-    env_file:
-      - ./hadoop.env
-    networks:
-      - big-data-net
+#  spark-worker-3:
+#    image: bde2020/spark-worker:3.3.0-hadoop3.3
+#    container_name: spark-worker-3
+#    depends_on:
+#      - spark-master
+#    ports:
+#      - "8083:8081" # Spark Worker 3 UI
+#    environment:
+#      - "SPARK_MASTER=spark://spark-master:7077"
+#    env_file:
+#      - ./hadoop.env
+#    networks:
+#      - big-data-net
 
 # Định nghĩa mạng chung
 networks:
@@ -202,5 +206,5 @@ networks:
 volumes:
   hadoop_namenode:
   hadoop_datanode1:
-  hadoop_datanode2:
-  hadoop_datanode3:
+#  hadoop_datanode2:
+#  hadoop_datanode3:
