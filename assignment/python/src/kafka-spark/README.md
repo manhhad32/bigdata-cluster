@@ -22,12 +22,8 @@ Chạy lệnh này từ thư mục chứa file docker-compose.yml
 docker compose up -d
 ```
 Bước 2: Cấu hình môi trường
-1. Tạo thư mục Checkpoint trên HDFS: Spark cần nơi này để lưu trạng thái.
-```sh
-docker compose exec namenode hdfs dfs -mkdir -p /spark-checkpoints
-```
 
-2. Tạo Topic Kafka: Chúng ta tạo topic web_logs với 1 partition và 1 bản sao
+1. Tạo Topic Kafka: Chúng ta tạo topic web_logs với 3 partition và 2 bản sao
 ```sh
 docker compose exec kafka1 kafka-topics \
   --create \
