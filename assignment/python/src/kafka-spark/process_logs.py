@@ -60,6 +60,7 @@ if __name__ == "__main__":
         .format("console")
         .option("truncate", "false") # Hiển thị đầy đủ nội dung cột
         .option("checkpointLocation", "hdfs://namenode:9000/spark-checkpoints/web_logs")
+        .trigger(processingTime='10 seconds') #10s đọc dữ liệu kafka 1 lần.
         .start()
     )
 
