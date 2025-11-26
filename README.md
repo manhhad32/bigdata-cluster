@@ -136,3 +136,11 @@ docker exec namenode hdfs dfs -put /my_file.txt
 ```sh
 docker compose logs nifi | grep "Generated"
 ```
+***Kiểm tra service hive-metastore nếu ko start được thì chạy cmd:
+```sh
+docker exec -it hive-metastore /opt/hive/bin/schematool -dbType postgres -initSchema
+```
+và restart lại hive-metastore:
+```sh
+docker restart hive-metastore
+```

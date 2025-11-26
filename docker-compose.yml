@@ -1,7 +1,7 @@
 version: "3.7"
 
 services:
-  # --- CỤM HADOOP (1 NameNode + 2 DataNodes) ---
+  # --- CỤM HADOOP ---
   namenode:
     image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
     container_name: namenode
@@ -51,7 +51,7 @@ services:
     networks:
       - big-data-net
 
-  # --- CỤM SPARK (1 Master + 2 Workers) ---
+  # --- CỤM SPARK ---
   spark-master:
     image: bde2020/spark-master:3.3.0-hadoop3.3
     container_name: spark-master
@@ -101,7 +101,7 @@ services:
 
   # --- DATABASE & ETL ---
   postgres-db:
-    image: postgres:15-alpine
+    image: postgres:9.6
     container_name: postgres-db
     hostname: postgres-db
     restart: unless-stopped
@@ -149,11 +149,16 @@ services:
     env_file:
       - ./hadoop.env
     environment:
-      - HIVE_CORE_CONF_javax_jdo_option_ConnectionURL=jdbc:postgresql://postgres-db:5432/etl_db
-      - HIVE_CORE_CONF_javax_jdo_option_ConnectionUserName=etl_user
-      - HIVE_CORE_CONF_javax_jdo_option_ConnectionPassword=etlUser@123
+      - HIVE_SITE_CONF_javax_jdo_option_ConnectionURL=jdbc:postgresql://postgres-db:5432/etl_db
+      - HIVE_SITE_CONF_javax_jdo_option_ConnectionDriverName=org.postgresql.Driver
+      - HIVE_SITE_CONF_javax_jdo_option_ConnectionUserName=etl_user
+      - HIVE_SITE_CONF_javax_jdo_option_ConnectionPassword=etlUser@123
+      - HIVE_SITE_CONF_datanucleus_autoCreateSchema=false
+      - HIVE_SITE_CONF_hive_metastore_schema_verification=false
       - SERVICE_PRECONDITION=namenode:9870 postgres-db:5432
-      - HADOOP_HEAPSIZE=512
+      - HADOOP_HEAPSIZE=2048
+    # --- COMMAND CHUẨN (Chỉ chạy service, vì DB đã init rồi) ---
+    command: ["/opt/hive/bin/hive", "--service", "metastore"]
     depends_on:
       - postgres-db
     ports:
@@ -168,11 +173,15 @@ services:
     env_file:
       - ./hadoop.env
     environment:
-      - HIVE_CORE_CONF_javax_jdo_option_ConnectionURL=jdbc:postgresql://postgres-db:5432/etl_db
-      - HIVE_CORE_CONF_javax_jdo_option_ConnectionUserName=etl_user
-      - HIVE_CORE_CONF_javax_jdo_option_ConnectionPassword=etlUser@123
+      - HIVE_SITE_CONF_javax_jdo_option_ConnectionURL=jdbc:postgresql://postgres-db:5432/etl_db
+      - HIVE_SITE_CONF_javax_jdo_option_ConnectionDriverName=org.postgresql.Driver
+      - HIVE_SITE_CONF_javax_jdo_option_ConnectionUserName=etl_user
+      - HIVE_SITE_CONF_javax_jdo_option_ConnectionPassword=etlUser@123
+      - HIVE_SITE_CONF_hive_metastore_schema_verification=false
       - SERVICE_PRECONDITION=hive-metastore:9083
-      - HADOOP_HEAPSIZE=512
+      - HADOOP_HEAPSIZE=2048
+    # --- COMMAND CHUẨN ---
+    command: ["/opt/hive/bin/hive", "--service", "hiveserver2"]
     depends_on:
       - hive-metastore
     ports:
