@@ -156,7 +156,7 @@ services:
       - HIVE_SITE_CONF_datanucleus_autoCreateSchema=false
       - HIVE_SITE_CONF_hive_metastore_schema_verification=false
       - SERVICE_PRECONDITION=namenode:9870 postgres-db:5432
-      - HADOOP_HEAPSIZE=2048
+      - HADOOP_HEAPSIZE=1024
     # --- COMMAND CHUẨN (Chỉ chạy service, vì DB đã init rồi) ---
     command: ["/opt/hive/bin/hive", "--service", "metastore"]
     depends_on:
@@ -180,14 +180,17 @@ services:
       - HIVE_SITE_CONF_hive_metastore_schema_verification=false
       - SERVICE_PRECONDITION=hive-metastore:9083
       - HADOOP_HEAPSIZE=2048
-    # --- COMMAND CHUẨN ---
-    command: ["/opt/hive/bin/hive", "--service", "hiveserver2"]
+      # --- SỬA TÊN BIẾN TỪ 'HIVE_OPTS' THÀNH 'HADOOP_OPTS' ---
+      - HADOOP_OPTS=-Djava.security.egd=file:/dev/./urandom
+      - HIVE_SITE_CONF_hive_server2_authentication=NOSASL
     depends_on:
       - hive-metastore
     ports:
       - "10000:10000"
     networks:
       - big-data-net
+    # --- GIỮ NGUYÊN COMMAND ĐỂ BẬT LOG DEBUG ---
+    command: ["/opt/hive/bin/hive", "--service", "hiveserver2", "--hiveconf", "hive.root.logger=INFO,console"]
 
 volumes:
   hadoop_namenode:
