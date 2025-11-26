@@ -7,8 +7,9 @@
 
 ## Truy cập giao diện web
 
-- Hadoop ResourceManager: [http://localhost:8080](http://localhost:8080)
-- Hadoop NameNode: [http://localhost:9870](http://localhost:9870)
+- Spark: [http://localhost:8080](http://localhost:8080)
+- Hadoop : [http://localhost:9870](http://localhost:9870)
+- Nifi: [https://localhost:8443/nifi](https://localhost:8443/nifi)
 
 ---
 
