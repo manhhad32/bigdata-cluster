@@ -29,23 +29,49 @@
 ## Phần 2: Giả lập Stream & ETL (câu 2, 3)
 
 - Câu 2: Giả lập Streaming (Producer)
-  - Nhiệm vụ: Đóng vai trò là hệ thống các cửa hàng (/home/hduser/data), liên tục đẩy dữ liệu bán hàng vào /home/hduser/realtime-data trên HDFS.
-  - file code: producer_streaming.py
-- Câu 3: ETL Worker (Consumer)
-  - Nhiệm vụ: Đóng vai trò là quy trình Backend, liên tục quét vùng chờ, lấy dữ liệu về kho chính (Warehouse) để làm sạch và lưu trữ lâu dài.
-  - file code: consumer_etl.py
+  - Nhiệm vụ: Đóng vai trò là hệ thống các cửa hàng tạo dữ liệu bán hàng lưu ở thư muc (/home/hduser/data), liên tục đẩy dữ liệu bán hàng vào /home/hduser/realtime-data ở local.
+  - file code: gen_data.py, simulate_streaming.py, 
+  - cmd:
+  ```sh
+  python scr/gen_data.py
+  python src/simulate_streaming.py
+  ```
 
-- cmd:
+- Câu 3: ETL - sử dụng Nifi
+  - Sư dụng Nifi để tạo flow data đưa toàn bộ file dữ liệu từ /home/hduser/realtime-data lên /data của HDFS (namenode - hadoop)
+  
+## Phần 3: HIVE WAREHOUSE
+
+(câu 4)
+- Sử dụng BDeaver để connect tới Hive (hive-server)
+  - Tạo bảng bằng câu lệnh trong file: Create_table_on_hive.sql
+  - Kiểm tra kết quả bằng: 
   ```sh
-  docker cp producer_streaming.py namenode:/tmp/
-  docker cp consumer_etl.py namenode:/tmp/
+  SELECT * FROM sales_db.orders LIMIT 20;
   ```
-- Chạy Consumer (Cửa sổ Terminal 1)
-  - Chạy script ETL trước để chờ dữ liệu.
+
+## Phần 4: PHÂN TÍCH SPARK & BÁO CÁO (Câu 5, 6, 7)
+
+(câu 5)
+- Sử dụng Spack (pySpark) để viết code tính toán phân tích theo yêu cầu - câu 5.
+- file code: src/analysis_spark.py
+- các bước run code này trên spark-master:
+  - b1: Copy file code vào trong container spark-master
+  Tạo thư mục src trên spark-master trước sau đó copy:
   ```sh
-  docker exec -it namenode python3 /tmp/consumer_etl.py
+  docker cp analysis_spark.py spark-master:/src/spark/
   ```
-  - Chạy Producer (Cửa sổ Terminal 2):
+  - b2: Truy cập vào container Spark Master
   ```sh
-  docker exec -it namenode python3 /tmp/producer_streaming.py
+  docker exec -it spark-master /bin/bash
   ```
+  - b3: Submit lệnh Spark
+  ```sh
+  spark/bin/spark-submit --master spark://spark-master:7077 src/analysis_spark.py
+  ```
+
+  -câu 6,7
+
+## Phần 5: BÁO CÁO (Câu 8)
+
+- Sử dụng Power BI tạo các báo cáo theo yêu cầu
