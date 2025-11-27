@@ -10,12 +10,10 @@
   - 1 master, 2 worker.
 - Database & Tool ETL
   - Database: Postgres
-  - Tool ETL: Nifi (cân nhắc hi sinh để dành resource cho kafka)
+  - Tool ETL: Nifi
 - Cụm Hive
   - Hive Meta store (hive-metastore, metatstore)
   - Hive server(hive-server, hiveserve2)
-- Cụm Kafka 
-  - Để tiết kiệm tài nguyên nên chỉ sử dụng 1 broker.
 
 ### Tạo dữ liệu giả lập trên HDFS
 
@@ -29,19 +27,6 @@
   ```
 
 ## Phần 2: Giả lập Stream & ETL (câu 2, 3)
-
-- để chuẩn bị topic trên kafka cho câu2,3 tạo topic:
-  ```sh
-  docker exec -it kafka1 kafka-topics --create \
-    --bootstrap-server localhost:9092 \
-    --topic store_data \
-    --partitions 3 \
-    --replication-factor 3
-  ```
-  kiểm tra lại topic tạo thành công chưa:
-  ```sh
-  docker exec -it kafka1 kafka-topics --describe --topic store_data --bootstrap-server localhost:9092
-  ```
 
 - Câu 2: Giả lập Streaming (Producer)
   - Nhiệm vụ: Đóng vai trò là hệ thống các cửa hàng (/home/hduser/data), liên tục đẩy dữ liệu bán hàng vào /home/hduser/realtime-data trên HDFS.
