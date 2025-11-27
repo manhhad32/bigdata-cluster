@@ -144,3 +144,21 @@ và restart lại hive-metastore:
 ```sh
 docker restart hive-metastore
 ```
+## Reset Mật khẩu của nifi:
+
+- Truy cập vào shell của container
+  ```sh
+  docker exec -it nifi bash
+  ```
+- đổi mật khẩu: (set username là admin, mật khẩu là AdminPassword123)
+  ```sh
+  ./bin/nifi.sh set-single-user-credentials admin AdminPassword123
+  ```
+- Thoát khỏi container 
+  ```sh
+  exit
+  ```
+- Khởi động lại Nifi:
+  ```sh
+  docker restart nifi
+  ```

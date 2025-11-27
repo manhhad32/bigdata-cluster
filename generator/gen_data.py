@@ -7,8 +7,8 @@ from datetime import datetime
 # --- CẤU HÌNH ---
 # Đây là đường dẫn trên máy HOST (máy thật của bạn)
 # Thư mục này phải khớp với thư mục bạn đã mount vào container NiFi trong docker-compose
-# Trong docker-compose trước đó: - ./data_source:/opt/nifi/nifi-current/data_source
-LOCAL_SOURCE_DIR = "./data_source" 
+# Trong docker-compose trước đó: - ./data:/opt/nifi/nifi-current/realtime-data
+LOCAL_SOURCE_DIR = "./data" 
 SHOPS = 60
 
 PRODUCTS = [

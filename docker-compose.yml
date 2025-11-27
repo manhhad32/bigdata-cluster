@@ -125,21 +125,24 @@ services:
     ports:
       - "8443:8443"
     environment:
+      # Cấu hình HTTPS (bắt buộc với bản mới)
       - NIFI_WEB_HTTPS_PORT=8443
-      - NIFI_SENSITIVE_PROPS_KEY=your_secret_key_for_nifi_123
+      - NIFI_WEB_HTTPS_HOST=0.0.0.0
+      # Key mã hóa (bắt buộc)
+      - NIFI_SENSITIVE_PROPS_KEY=BiMat_KhongDuocTietLo_123456789
+      # TẠO USER ADMIN (Pass tối thiểu 12 ký tự)
       - NIFI_SINGLE_USER_CREDENTIALS_USERNAME=admin
-      - NIFI_SINGLE_USER_CREDENTIALS_PASSWORD=2Qp1ygNRrRdnBtrLYTdYnfl8wDfACv
+      - NIFI_SINGLE_USER_CREDENTIALS_PASSWORD=AdminPassword123
+      
+      # Cấu hình bộ nhớ
       - NIFI_JVM_HEAP_INIT=512m
       - NIFI_JVM_HEAP_MAX=1024m
     volumes:
-      # Bỏ comment để giữ lại Flow khi restart container
       - nifi_data:/opt/nifi/nifi-current/data
       - nifi_conf:/opt/nifi/nifi-current/conf
       - ./nifi_drivers:/opt/nifi/nifi-current/drivers
-      # Quan trọng: Chứa core-site.xml và hdfs-site.xml để connect Hadoop
       - ./nifi_hadoop_config:/opt/nifi/hadoop_config
-      # Mount folder chứa file CSV giả lập từ máy host vào NiFi
-      - ./data_source:/opt/nifi/nifi-current/data_source
+      - ./data:/opt/nifi/nifi-current/realtime-data
     depends_on:
       - namenode
       - postgres-db
