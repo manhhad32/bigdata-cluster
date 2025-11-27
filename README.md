@@ -33,7 +33,7 @@
 
 (câu 4)
 - Sử dụng BDeaver để connect tới Hive (hive-server)
-  - Tạo bảng bằng câu lệnh trong file: Create_table_on_hive.sql
+  - Tạo bảng bằng câu lệnh trong file: src/Create_table_on_hive.sql
   - Kiểm tra kết quả bằng: 
   ```sh
   SELECT * FROM sales_db.orders LIMIT 20;
