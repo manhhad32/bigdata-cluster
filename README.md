@@ -40,7 +40,7 @@
   SELECT * FROM sales_db.orders LIMIT 20;
   ```
 
-## PHẦN 4: PHÂN TÍCH & BÁO CÁO (Câu 5, 6, 7)
+## PHẦN 4: PHÂN TÍCH DỮ LIỆU (Câu 5, 6, 7)
 
 (câu 5)
 - Sử dụng Spack (pySpark) để viết code tính toán phân tích theo yêu cầu - câu 5.
