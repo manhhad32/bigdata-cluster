@@ -1,146 +1,53 @@
-# Big Data Cluster
+# Bài tập chia làm 5 phần như sau:
 
-## Phiên bản cài đặt
+## Phần 1: Chuẩn bị môi trường
 
-- **Hadoop:** 3.2.1  
-- **Spark:** 3.3.0
+### Sử dụng Docker để triên khai các thành phần trong kiến trúc xử lý bigdata gồm:
 
-## Truy cập giao diện web
+- Cụm Hadoop
+  - 1 namenode(master), 2 datanode(worker)
+- Cụm Spark
+  - 1 master, 2 worker.
+- Database & Tool ETL
+  - Database: Postgres
+  - Tool ETL: Nifi (cân nhắc hi sinh để dành resource cho kafka)
+- Cụm Hive
+  - Hive Meta store (hive-metastore, metatstore)
+  - Hive server(hive-server, hiveserve2)
+- Cụm Kafka 
+  - Để tiết kiệm tài nguyên nên chỉ sử dụng 1 broker.
 
-- Spark: [http://localhost:8080](http://localhost:8080)
-- Hadoop : [http://localhost:9870](http://localhost:9870)
-- Nifi: [https://localhost:8443/nifi](https://localhost:8443/nifi)
+### Tạo dữ liệu giả lập trên HDFS
 
----
-
-## Kiến trúc hệ thống triển khai
-
-- **1 Namenode:** "Master" của Hadoop, quản lý hệ thống file HDFS và tài nguyên YARN.
-- **3 Datanode:** "Worker" của Hadoop, chịu trách nhiệm lưu trữ dữ liệu thực tế.
-- **1 Spark Master:** "Master" của Spark, quản lý và điều phối các tác vụ.
-- **3 Spark Worker:** "Worker" của Spark, chịu trách nhiệm thực thi các tác vụ tính toán.
-
-> **Lưu ý:** Để đơn giản hóa, Spark Master và Hadoop Namenode sẽ chạy trên cùng một container `master`.
-
----
-
-## Khởi động và kiểm tra cluster
-
-**Khởi động cluster:**
-```sh
-docker compose up -d
-```
-
-**Kiểm tra trạng thái các container:**
-```sh
-docker ps
-```
-
----
-
-## Làm việc với HDFS
-
-Bạn có thể thao tác với HDFS từ bất kỳ container nào.
-
-**Tạo thư mục trên HDFS:**
-```sh
-docker exec namenode hdfs dfs -mkdir -p /user/test
-```
-
-**Chép file từ local vào HDFS:**
-```sh
-# Tạo một file mẫu
-echo "Hello Big Data" > my_file.txt
-
-# Chép file vào container namenode
-docker cp my_file.txt namenode:/
-
-# Từ bên trong container, chép file vào HDFS
-docker exec namenode hdfs dfs -put /my_file.txt /user/test
-```
-
----
-
-## Dọn dẹp hệ thống
-
-**Tắt và xóa cluster, bao gồm cả volumes dữ liệu HDFS:**
-```sh
-docker compose down -v
-```
-
----
-
-## Các lệnh hữu ích khác
-
-- **Khởi động lại cluster (khi container đang dừng):**
+- run code : setup_data.py để sinh ra 388.800 files csv dữ liệu mẫu, trên thư mục: /home/hduser/data của Hadoop.
+- run lần lượt các câu lệnh sau: 
   ```sh
-  docker compose start
+  docker cp setup_data.py namenode:/tmp/
   ```
-- **Tạm dừng cluster (không xóa):**
   ```sh
-  docker compose stop
-  ```
-- **Tắt và xóa hoàn toàn cluster:**
-  ```sh
-  docker compose down
+  docker exec namenode python3 /tmp/setup_data.py
   ```
 
----
+## Phần 2: Giả lập Stream & ETL (câu 2, 3)
 
-## Gửi tác vụ Spark lên cluster
+- Câu 2: Giả lập Streaming (Producer)
+  - Nhiệm vụ: Đóng vai trò là hệ thống các cửa hàng (/home/hduser/data), liên tục đẩy dữ liệu bán hàng vào /home/hduser/realtime-data trên HDFS.
+  - file code: producer_streaming.py
+- Câu 3: ETL Worker (Consumer)
+  - Nhiệm vụ: Đóng vai trò là quy trình Backend, liên tục quét vùng chờ, lấy dữ liệu về kho chính (Warehouse) để làm sạch và lưu trữ lâu dài.
+  - file code: consumer_etl.py
 
-Ví dụ gửi bài toán tính số Pi lên cluster:
-
-```sh
-docker exec spark-master /spark/bin/spark-submit \
-  --class org.apache.spark.examples.SparkPi \
-  --master spark://spark-master:7077 \
-  --deploy-mode client \
-  --executor-memory 1G \
-  --total-executor-cores 3 \
-  /spark/examples/jars/spark-examples_2.12-3.3.0.jar 100
-```
-
----
-
-## Mẹo: Tìm đường dẫn lệnh trong container
-
-**Mở shell vào container:**
-```sh
-docker exec -it spark-master /bin/bash
-```
-**Tìm đường dẫn lệnh:**
-```sh
-which spark-submit
-```
-
----
-
-## Spark tương tác với HDFS
-
-Bạn có thể thao tác với HDFS từ bất kỳ container nào.
-
-**Tạo thư mục trên HDFS:**
-```sh
-docker exec namenode hdfs dfs -mkdir -p /user/test
-```
-
-**Chép file từ local vào HDFS:**
-```sh
-echo "Hello Big Data" > my_file.txt
-docker cp my_file.txt namenode:/
-docker exec namenode hdfs dfs -put /my_file.txt
-```
-
-***Sau Khi start NiFi nếu không login được bằng user/pass đã setup thì tìm giá trị default bằng cách:
-```sh
-docker compose logs nifi | grep "Generated"
-```
-***Kiểm tra service hive-metastore nếu ko start được thì chạy cmd:
-```sh
-docker exec -it hive-metastore /opt/hive/bin/schematool -dbType postgres -initSchema
-```
-và restart lại hive-metastore:
-```sh
-docker restart hive-metastore
-```
+- cmd:
+  ```sh
+  docker cp producer_streaming.py namenode:/tmp/
+  docker cp consumer_etl.py namenode:/tmp/
+  ```
+- Chạy Consumer (Cửa sổ Terminal 1)
+  - Chạy script ETL trước để chờ dữ liệu.
+  ```sh
+  docker exec -it namenode python3 /tmp/consumer_etl.py
+  ```
+  - Chạy Producer (Cửa sổ Terminal 2):
+  ```sh
+  docker exec -it namenode python3 /tmp/producer_streaming.py
+  ```

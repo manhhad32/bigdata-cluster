@@ -99,6 +99,68 @@ services:
     networks:
       - big-data-net
 
+  # --- CỤM KAFKA (SINGLE BROKER - KRAFT MODE) ---
+  kafka1:
+    image: confluentinc/cp-kafka:7.6.1
+    hostname: kafka1
+    container_name: kafka1
+    ports:
+      - "19092:19092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LISTENERS: 'INTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:19092'
+      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka1:9092,EXTERNAL://localhost:19092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      #KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093'
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+    networks:
+      - big-data-net
+
+  kafka2:
+    image: confluentinc/cp-kafka:7.6.1
+    hostname: kafka2
+    container_name: kafka2
+    ports:
+      - "19093:19093"
+    depends_on: [kafka1]
+    environment:
+      KAFKA_NODE_ID: 2
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LISTENERS: 'INTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:19093'
+      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka2:9092,EXTERNAL://localhost:19093'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      #KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093'
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+    networks:
+      - big-data-net
+
+  kafka3:
+    image: confluentinc/cp-kafka:7.6.1
+    hostname: kafka3
+    container_name: kafka3
+    ports:
+      - "19094:19094"
+    depends_on: [kafka1]
+    environment:
+      KAFKA_NODE_ID: 3
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LISTENERS: 'INTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:19094'
+      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka3:9092,EXTERNAL://localhost:19094'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+    networks:
+      - big-data-net
+
   # --- DATABASE & ETL ---
   postgres-db:
     image: postgres:9.6
@@ -116,30 +178,31 @@ services:
     networks:
       - big-data-net
 
-  nifi:
-    image: apache/nifi:1.25.0
-    container_name: nifi
-    hostname: nifi
-    restart: unless-stopped
-    ports:
-      - "8443:8443"
-    environment:
-      - NIFI_WEB_HTTPS_PORT=8443
-      - NIFI_SENSITIVE_PROPS_KEY=your_secret_key_for_nifi_123
-      - NIFI_SINGLE_USER_CREDENTIALS_USERNAME=admin
-      - NIFI_SINGLE_USER_CREDENTIALS_PASSWORD=2Qp1ygNRrRdnBtrLYTdYnfl8wDfACv
-      - NIFI_JVM_HEAP_INIT=256m
-      - NIFI_JVM_HEAP_MAX=512m
-    volumes:
-      - nifi_data:/opt/nifi/nifi-current/data
-      - nifi_conf:/opt/nifi/nifi-current/conf
-      - ./nifi_drivers:/opt/nifi/nifi-current/drivers
-      - ./nifi_hadoop_config:/opt/nifi/hadoop_config
-    depends_on:
-      - namenode
-      - postgres-db
-    networks:
-      - big-data-net
+  #nifi:
+  #  image: apache/nifi:1.25.0
+  #  container_name: nifi
+  #  hostname: nifi
+  #  restart: unless-stopped
+  #  ports:
+  #    - "8443:8443"
+  #  environment:
+  #    - NIFI_WEB_HTTPS_PORT=8443
+  #    - NIFI_SENSITIVE_PROPS_KEY=your_secret_key_for_nifi_123
+  #    - NIFI_SINGLE_USER_CREDENTIALS_USERNAME=admin
+  #    - NIFI_SINGLE_USER_CREDENTIALS_PASSWORD=2Qp1ygNRrRdnBtrLYTdYnfl8wDfACv
+  #    - NIFI_JVM_HEAP_INIT=256m
+  #    - NIFI_JVM_HEAP_MAX=512m
+  #  volumes:
+  #    - nifi_data:/opt/nifi/nifi-current/data
+  #    - nifi_conf:/opt/nifi/nifi-current/conf
+  #    - ./nifi_drivers:/opt/nifi/nifi-current/drivers
+  #    - ./nifi_hadoop_config:/opt/nifi/hadoop_config
+  #    - ./data_source:/opt/nifi/nifi-current/data_source
+  #  depends_on:
+  #    - namenode
+  #    - postgres-db
+  #  networks:
+  #    - big-data-net
 
   # --- CỤM HIVE (MetaStore + Server) ---
   hive-metastore:
@@ -197,8 +260,8 @@ volumes:
   hadoop_datanode1:
   hadoop_datanode2:
   postgres_data:
-  nifi_data:
-  nifi_conf:
+  #nifi_data:
+  #nifi_conf:
 
 networks:
   big-data-net:
