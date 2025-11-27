@@ -1,7 +1,7 @@
 #version: "3.7"
 
 services:
-  # --- CỤM HADOOP ---
+  # --- CỤM HADOOP (HDFS) ---
   namenode:
     image: bde2020/hadoop-namenode:2.0.0-hadoop3.2.1-java8
     container_name: namenode
@@ -101,7 +101,8 @@ services:
 
   # --- DATABASE & ETL ---
   postgres-db:
-    image: postgres:9.6
+    # Nâng cấp lên version ổn định hơn
+    image: postgres:13
     container_name: postgres-db
     hostname: postgres-db
     restart: unless-stopped
@@ -128,13 +129,17 @@ services:
       - NIFI_SENSITIVE_PROPS_KEY=your_secret_key_for_nifi_123
       - NIFI_SINGLE_USER_CREDENTIALS_USERNAME=admin
       - NIFI_SINGLE_USER_CREDENTIALS_PASSWORD=2Qp1ygNRrRdnBtrLYTdYnfl8wDfACv
-      - NIFI_JVM_HEAP_INIT=256m
-      - NIFI_JVM_HEAP_MAX=512m
+      - NIFI_JVM_HEAP_INIT=512m
+      - NIFI_JVM_HEAP_MAX=1024m
     volumes:
+      # Bỏ comment để giữ lại Flow khi restart container
       - nifi_data:/opt/nifi/nifi-current/data
       - nifi_conf:/opt/nifi/nifi-current/conf
       - ./nifi_drivers:/opt/nifi/nifi-current/drivers
+      # Quan trọng: Chứa core-site.xml và hdfs-site.xml để connect Hadoop
       - ./nifi_hadoop_config:/opt/nifi/hadoop_config
+      # Mount folder chứa file CSV giả lập từ máy host vào NiFi
+      - ./data_source:/opt/nifi/nifi-current/data_source
     depends_on:
       - namenode
       - postgres-db
@@ -153,14 +158,15 @@ services:
       - HIVE_SITE_CONF_javax_jdo_option_ConnectionDriverName=org.postgresql.Driver
       - HIVE_SITE_CONF_javax_jdo_option_ConnectionUserName=etl_user
       - HIVE_SITE_CONF_javax_jdo_option_ConnectionPassword=etlUser@123
-      - HIVE_SITE_CONF_datanucleus_autoCreateSchema=false
+      # QUAN TRỌNG: Phải set true để tự tạo bảng metadata lần đầu
+      - HIVE_SITE_CONF_datanucleus_autoCreateSchema=true
       - HIVE_SITE_CONF_hive_metastore_schema_verification=false
       - SERVICE_PRECONDITION=namenode:9870 postgres-db:5432
       - HADOOP_HEAPSIZE=1024
-    # --- COMMAND CHUẨN (Chỉ chạy service, vì DB đã init rồi) ---
     command: ["/opt/hive/bin/hive", "--service", "metastore"]
     depends_on:
       - postgres-db
+      - namenode
     ports:
       - "9083:9083"
     networks:
@@ -180,7 +186,6 @@ services:
       - HIVE_SITE_CONF_hive_metastore_schema_verification=false
       - SERVICE_PRECONDITION=hive-metastore:9083
       - HADOOP_HEAPSIZE=2048
-      # --- SỬA TÊN BIẾN TỪ 'HIVE_OPTS' THÀNH 'HADOOP_OPTS' ---
       - HADOOP_OPTS=-Djava.security.egd=file:/dev/./urandom
       - HIVE_SITE_CONF_hive_server2_authentication=NOSASL
     depends_on:
@@ -189,7 +194,6 @@ services:
       - "10000:10000"
     networks:
       - big-data-net
-    # --- GIỮ NGUYÊN COMMAND ĐỂ BẬT LOG DEBUG ---
     command: ["/opt/hive/bin/hive", "--service", "hiveserver2", "--hiveconf", "hive.root.logger=INFO,console"]
 
 volumes:
