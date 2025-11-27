@@ -2,7 +2,7 @@
 
 ## Phần 1: Chuẩn bị môi trường
 
-### Sử dụng Docker để triên khai các thành phần trong kiến trúc xử lý bigdata gồm:
+### Sử dụng Docker để triển khai các thành phần trong kiến trúc xử lý bigdata gồm:
 
 - Cụm Hadoop
   - 1 namenode(master), 2 datanode(worker)
