@@ -142,7 +142,7 @@ services:
       - nifi_conf:/opt/nifi/nifi-current/conf
       - ./nifi_drivers:/opt/nifi/nifi-current/drivers
       - ./nifi_hadoop_config:/opt/nifi/hadoop_config
-      - ./data:/opt/nifi/nifi-current/realtime-data
+      - ./realtime-data:/opt/nifi/nifi-current/realtime-data
     depends_on:
       - namenode
       - postgres-db
