@@ -15,17 +15,6 @@
   - Hive Meta store (hive-metastore, metatstore)
   - Hive server(hive-server, hiveserve2)
 
-### Tạo dữ liệu giả lập trên HDFS
-
-- run code : setup_data.py để sinh ra 388.800 files csv dữ liệu mẫu, trên thư mục: /home/hduser/data của Hadoop.
-- run lần lượt các câu lệnh sau: 
-  ```sh
-  docker cp setup_data.py namenode:/tmp/
-  ```
-  ```sh
-  docker exec namenode python3 /tmp/setup_data.py
-  ```
-
 ## Phần 2: Giả lập Stream & ETL (câu 2, 3)
 
 - Câu 2: Giả lập Streaming
