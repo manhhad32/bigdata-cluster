@@ -30,6 +30,19 @@
 
 ## Phần 2: Giả lập Stream & ETL (câu 2, 3)
 
+- để chuẩn bị topic trên kafka cho câu2,3 tạo topic:
+  ```sh
+  docker exec -it kafka1 kafka-topics --create \
+    --bootstrap-server localhost:9092 \
+    --topic store_data \
+    --partitions 3 \
+    --replication-factor 3
+  ```
+  kiểm tra lại topic tạo thành công chưa:
+  ```sh
+  docker exec -it kafka1 kafka-topics --describe --topic store_data --bootstrap-server localhost:9092
+  ```
+
 - Câu 2: Giả lập Streaming (Producer)
   - Nhiệm vụ: Đóng vai trò là hệ thống các cửa hàng (/home/hduser/data), liên tục đẩy dữ liệu bán hàng vào /home/hduser/realtime-data trên HDFS.
   - file code: producer_streaming.py
