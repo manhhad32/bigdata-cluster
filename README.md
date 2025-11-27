@@ -1,6 +1,6 @@
 # Bài tập chia làm 5 phần như sau:
 
-## Phần 1: Chuẩn bị môi trường
+## PHẦN 1: CHUẨN BỊ MỘI TRƯỜNG
 
 ### Sử dụng Docker để triển khai các thành phần trong kiến trúc xử lý bigdata gồm:
 
@@ -15,8 +15,9 @@
   - Hive Meta store (hive-metastore, metatstore)
   - Hive server(hive-server, hiveserve2)
 
-## Phần 2: Giả lập Stream & ETL (câu 2, 3)
+## PHẦN 2: STREAMING & ETL 
 
+(câu 2, 3)
 - Câu 2: Giả lập Streaming
   - Nhiệm vụ: Đóng vai trò là hệ thống các cửa hàng tạo dữ liệu bán hàng lưu ở thư muc (/home/hduser/data), liên tục đẩy dữ liệu bán hàng vào /home/hduser/realtime-data ở local.
   - file code: gen_data.py, simulate_streaming.py, 
@@ -29,7 +30,7 @@
 - Câu 3: ETL - sử dụng Nifi
   - Sư dụng Nifi để tạo flow data đưa toàn bộ file dữ liệu từ /home/hduser/realtime-data lên /data của HDFS (namenode - hadoop)
   
-## Phần 3: HIVE WAREHOUSE
+## PHẦN 3: HIVE WAREHOUSE
 
 (câu 4)
 - Sử dụng BDeaver để connect tới Hive (hive-server)
@@ -39,7 +40,7 @@
   SELECT * FROM sales_db.orders LIMIT 20;
   ```
 
-## Phần 4: PHÂN TÍCH SPARK & BÁO CÁO (Câu 5, 6, 7)
+## PHẦN 4: PHÂN TÍCH SPARK & BÁO CÁO (Câu 5, 6, 7)
 
 (câu 5)
 - Sử dụng Spack (pySpark) để viết code tính toán phân tích theo yêu cầu - câu 5.
@@ -61,6 +62,6 @@
 
   -câu 6,7
 
-## Phần 5: BÁO CÁO (Câu 8)
+## PHẦN 5: BÁO CÁO (Câu 8)
 
 - Sử dụng Power BI tạo các báo cáo theo yêu cầu
