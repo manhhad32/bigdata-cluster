@@ -61,7 +61,7 @@ services:
       - "7077:7077"
     environment:
       - INIT_DAEMON_STEP=setup_spark
-      - SPARK_DAEMON_MEMORY=512m
+      - SPARK_DAEMON_MEMORY=1024m
     env_file:
       - ./hadoop.env
     networks:
@@ -76,8 +76,8 @@ services:
       - "8081:8081"
     environment:
       - SPARK_MASTER=spark://spark-master:7077
-      - SPARK_WORKER_MEMORY=512m
-      - SPARK_EXECUTOR_MEMORY=512m
+      - SPARK_WORKER_MEMORY=1536m
+      - SPARK_EXECUTOR_MEMORY=1536m
     env_file:
       - ./hadoop.env
     networks:
@@ -92,8 +92,8 @@ services:
       - "8082:8081"
     environment:
       - SPARK_MASTER=spark://spark-master:7077
-      - SPARK_WORKER_MEMORY=512m
-      - SPARK_EXECUTOR_MEMORY=512m
+      - SPARK_WORKER_MEMORY=1536m
+      - SPARK_EXECUTOR_MEMORY=1536m
     env_file:
       - ./hadoop.env
     networks:

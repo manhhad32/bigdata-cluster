@@ -1,3 +1,4 @@
+--Q4:
 -- Bước 1: Tạo Database quản lý bán hàng
 CREATE DATABASE IF NOT EXISTS sales_db;
 

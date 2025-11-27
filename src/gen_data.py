@@ -79,6 +79,10 @@ def generate_batch_data():
                     total_files += 1
                 except Exception as e:
                     print(f"Lỗi ghi file {filename}: {e}")
+        # In tiến độ sau mỗi 10 ngày để người dùng biết máy không bị treo
+        if day % 10 == 0 :
+            print(f"-> Đang xử lý ngày thứ {day}/{DAYS_TO_GENERATE} ({date_str}). Tổng file đã tạo: {total_files}")
+                
 
         
     print(f"✅ HOÀN TẤT! Đã sinh tổng cộng {total_files} file trong {LOCAL_SOURCE_DIR}.")
