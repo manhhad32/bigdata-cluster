@@ -28,7 +28,7 @@
 
 ## Phần 2: Giả lập Stream & ETL (câu 2, 3)
 
-- Câu 2: Giả lập Streaming (Producer)
+- Câu 2: Giả lập Streaming
   - Nhiệm vụ: Đóng vai trò là hệ thống các cửa hàng tạo dữ liệu bán hàng lưu ở thư muc (/home/hduser/data), liên tục đẩy dữ liệu bán hàng vào /home/hduser/realtime-data ở local.
   - file code: gen_data.py, simulate_streaming.py, 
   - cmd:
