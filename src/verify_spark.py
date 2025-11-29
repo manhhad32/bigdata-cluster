@@ -36,7 +36,7 @@ def main():
     # --- KIỂM TRA YÊU CẦU 5a: Top K sản phẩm bán chạy nhất ---
     # Logic: Group theo tên sản phẩm -> Tính tổng số lượng (Amount) -> Sắp xếp giảm dần
     K = 5
-    print(f"\n=== [SQL 5a] Top {K} Sản phẩm bán chạy nhất (theo Số lượng) ===")
+    print(f"\n=== [SQL 5a] top {K} sản phẩm bán chạy nhất (theo Số lượng - toàn hệ thống) ===")
     spark.sql(f"""
         SELECT 
             ProductName, 
@@ -49,7 +49,7 @@ def main():
 
     # --- KIỂM TRA YÊU CẦU 5c: Doanh thu trên mỗi sản phẩm ---
     # Logic: Group theo tên -> Tính tổng (Amount * Price) -> Sắp xếp giảm dần
-    print("\n=== [SQL 5c] Doanh thu từng sản phẩm (Toàn hệ thống) ===")
+    print("\n=== [SQL 5c] Doanh thu từng sản phẩm (toàn hệ thống) ===")
     spark.sql("""
         SELECT 
             ProductName, 
