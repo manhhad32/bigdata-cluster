@@ -90,7 +90,7 @@ def main():
     # 4. [L]oad: Ghi vào PostgreSQL
     print("--- [L]oad: Ghi kết quả vào Database ---")
 
-    # Lưu ý: Tên bảng trong Postgres nên đặt rõ ràng để dễ truy vấn
+    
     res_5a.write.mode("overwrite").jdbc(DB_URL, "report_5a_top5_qty_2023", properties=DB_PROPS)
     res_5b.write.mode("overwrite").jdbc(DB_URL, "report_5b_top3_qty_mar2023", properties=DB_PROPS)
     res_5c.write.mode("overwrite").jdbc(DB_URL, "report_5c_top10_rev2023", properties=DB_PROPS)
