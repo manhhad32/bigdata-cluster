@@ -10,82 +10,91 @@ DB_PROPS = {
     "driver": "org.postgresql.Driver"
 }
 
+# --- THAM SỐ YÊU CẦU ---
+TARGET_MONTH = "202303"  # Tháng 3 năm 2023 (Dùng cho 5b, 5d)
+TARGET_YEAR  = "2023"    # Năm 2023 (Dùng cho 5c)
+K_B = 3                  # Top 3 sản phẩm bán chạy (5b)
+K_C = 10                 # Top 10 sản phẩm doanh thu cao nhất (5c) - MỚI
+K_D = 10                 # Top 10 shop doanh thu cao nhất (5d)
+
 def main():
     # 1. Khởi tạo Spark
     spark = SparkSession.builder \
-        .appName("Final_ETL_Updated_Logic") \
+        .appName("Final_ETL_Question7_Final_v2") \
         .config("spark.sql.shuffle.partitions", "10") \
         .getOrCreate()
     
     spark.sparkContext.setLogLevel("ERROR")
 
-    # 2. Định nghĩa Schema (Cập nhật thêm Discount)
-    # File CSV có 6 cột: OrderID, ProductID, ProductName, Amount, Price, Discount
+    # 2. Định nghĩa Schema
     schema = StructType([
         StructField("OrderID", LongType()),
         StructField("ProductID", IntegerType()),
         StructField("ProductName", StringType()),
         StructField("Amount", IntegerType()),
-        StructField("Price", LongType()), # Trong code mẫu bạn dùng int/long cho giá
+        StructField("Price", LongType()),
         StructField("Discount", LongType()) 
     ])
 
     print("--- [E]xtract: Đọc dữ liệu từ HDFS ---")
-    # Đọc csv và thêm cột filename để lấy ShopID
     raw_df = spark.read.schema(schema) \
         .option("header", "false") \
         .csv("hdfs://namenode:9000/data/*.csv") \
         .withColumn("FilePath", input_file_name())
 
-    # 3. [T]ransform: Áp dụng Logic chuẩn từ analysis_spark.py
-    print("--- [T]ransform: Làm sạch và Tính toán ---")
-    
+    # 3. [T]ransform: Làm sạch và chuẩn hóa dữ liệu
     df_clean = raw_df \
         .withColumn("ShopID", regexp_extract("FilePath", r"Shop-(\d+)", 1).cast("int")) \
         .withColumn("YearMonth", substring(col("OrderID").cast("string"), 1, 6)) \
         .withColumn("Year", substring(col("OrderID").cast("string"), 1, 4)) \
         .withColumn("Revenue", (col("Price") * col("Amount")) - col("Discount"))
 
-    # Cache lại để dùng cho 4 câu lệnh sau
     df_clean.cache()
 
-    # --- 5a. Top Sản phẩm bán chạy nhất (Toàn thời gian) ---
-    # Logic: Group by Product -> Sum Amount
-    print("Processing 5a...")
+    # ====================================================
+    # XỬ LÝ CÁC YÊU CẦU
+    # ====================================================
+
+    # --- 5a. Top 5 Sản phẩm bán chạy nhất (Toàn hệ thống - All Time) ---
+    print("Processing 5a (Top 5 Quantity - All Time)...")
     res_5a = df_clean.groupBy("ProductID", "ProductName") \
         .agg(sum("Amount").alias("TotalQuantity")) \
-        .orderBy(desc("TotalQuantity"))
+        .orderBy(desc("TotalQuantity")) \
+        .limit(5)
     
-    # --- 5b. Top Sản phẩm bán chạy (Theo Tháng) ---
-    # Logic: Group by Month, Product. 
-    # Lưu ý: Ta lưu TOÀN BỘ các tháng vào DB, khi cần xem tháng 202303 chỉ cần SELECT ... WHERE YearMonth='202303'
-    print("Processing 5b...")
-    res_5b = df_clean.groupBy("YearMonth", "ProductID", "ProductName") \
+    # --- 5b. Top 3 Sản phẩm bán chạy nhất (Tháng 03/2023) ---
+    print(f"Processing 5b (Top {K_B} Quantity in {TARGET_MONTH})...")
+    res_5b = df_clean.filter(col("YearMonth") == TARGET_MONTH) \
+        .groupBy("ProductID", "ProductName") \
         .agg(sum("Amount").alias("TotalQuantity")) \
-        .orderBy("YearMonth", desc("TotalQuantity"))
+        .orderBy(desc("TotalQuantity")) \
+        .limit(K_B)
 
-    # --- 5c. Doanh thu sản phẩm (Theo Năm) ---
-    # Logic: Group by Year, Product -> Sum Revenue (đã trừ discount)
-    print("Processing 5c...")
-    res_5c = df_clean.groupBy("Year", "ProductID", "ProductName") \
+    # --- 5c. Top 10 Sản phẩm doanh thu cao nhất (Năm 2023) ---
+    # Cập nhật: Thêm limit(10)
+    print(f"Processing 5c (Top {K_C} Revenue in {TARGET_YEAR})...")
+    res_5c = df_clean.filter(col("Year") == TARGET_YEAR) \
+        .groupBy("ProductID", "ProductName") \
         .agg(sum("Revenue").alias("TotalRevenue")) \
-        .orderBy("Year", desc("TotalRevenue"))
+        .orderBy(desc("TotalRevenue")) \
+        .limit(K_C)
 
-    # --- 5d. Doanh thu Shop (Theo Tháng) ---
-    # Logic: Group by Month, Shop -> Sum Revenue
-    print("Processing 5d...")
-    res_5d = df_clean.groupBy("YearMonth", "ShopID") \
+    # --- 5d. Top 10 Shop doanh thu lớn nhất (Tháng 03/2023) ---
+    print(f"Processing 5d (Top {K_D} Shops in {TARGET_MONTH})...")
+    res_5d = df_clean.filter(col("YearMonth") == TARGET_MONTH) \
+        .groupBy("ShopID") \
         .agg(sum("Revenue").alias("ShopRevenue")) \
-        .orderBy("YearMonth", "ShopID")
+        .orderBy(desc("ShopRevenue")) \
+        .limit(K_D)
 
     # 4. [L]oad: Ghi vào PostgreSQL
     print("--- [L]oad: Ghi kết quả vào Database ---")
 
-    # Ghi đè (Overwrite) để đảm bảo dữ liệu mới nhất
-    res_5a.write.mode("overwrite").jdbc(DB_URL, "report_5a_top_products_alltime", properties=DB_PROPS)
-    res_5b.write.mode("overwrite").jdbc(DB_URL, "report_5b_top_products_monthly", properties=DB_PROPS)
-    res_5c.write.mode("overwrite").jdbc(DB_URL, "report_5c_revenue_products_yearly", properties=DB_PROPS)
-    res_5d.write.mode("overwrite").jdbc(DB_URL, "report_5d_revenue_shop_monthly", properties=DB_PROPS)
+    # Lưu ý: Tên bảng trong Postgres nên đặt rõ ràng để dễ truy vấn
+    res_5a.write.mode("overwrite").jdbc(DB_URL, "report_5a_top5_qty_2023", properties=DB_PROPS)
+    res_5b.write.mode("overwrite").jdbc(DB_URL, "report_5b_top3_qty_mar2023", properties=DB_PROPS)
+    res_5c.write.mode("overwrite").jdbc(DB_URL, "report_5c_top10_rev2023", properties=DB_PROPS)
+    res_5d.write.mode("overwrite").jdbc(DB_URL, "report_5d_top10_shop_rev_mar2023", properties=DB_PROPS)
 
     print("--- [SUCCESS] Đã ETL thành công! ---")
     spark.stop()
