@@ -6,6 +6,8 @@ def main():
     spark = SparkSession.builder \
         .appName("Question6_Verify_SparkSQL") \
         .getOrCreate()
+    
+    spark.sparkContext.setLogLevel("ERROR")
 
     # 2. Định nghĩa Schema (Cấu trúc dữ liệu)
     # Cấu trúc: OrderID,ProductID,ProductName,Amount,Price,Discount (nếu có)
