@@ -62,6 +62,11 @@ services:
     environment:
       - INIT_DAEMON_STEP=setup_spark
       - SPARK_DAEMON_MEMORY=1024m
+      
+    volumes:
+      - ./spark_drivers:/opt/spark_drivers
+      - ./src/spark:/opt/spark_apps
+
     env_file:
       - ./hadoop.env
     networks:

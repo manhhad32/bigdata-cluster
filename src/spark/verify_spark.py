@@ -11,14 +11,12 @@ def main():
 
     # 2. Định nghĩa Schema (Cấu trúc dữ liệu)
     # Cấu trúc: OrderID,ProductID,ProductName,Amount,Price,Discount (nếu có)
-    # Lưu ý: Cần khớp với lúc Consumer Kafka ghi xuống
     schema = StructType([
         StructField("OrderID", LongType()),
         StructField("ProductID", IntegerType()),
         StructField("ProductName", StringType()),
         StructField("Amount", IntegerType()),
         StructField("Price", DoubleType()),
-        # Thêm cột ShopSource nếu file CSV của bạn có ghi kèm nguồn
         # StructField("ShopSource", StringType()) 
     ])
 
