@@ -49,7 +49,7 @@
   - b1: Copy file code vào trong container spark-master
   Tạo thư mục src trên spark-master trước sau đó copy:
   ```sh
-  docker cp analysis_spark.py spark-master:/src/spark/
+  docker cp analysis_spark.py spark-master:/src
   ```
   - b2: Truy cập vào container Spark Master
   ```sh
@@ -57,7 +57,8 @@
   ```
   - b3: Submit lệnh Spark
   ```sh
-  spark/bin/spark-submit --master spark://spark-master:7077 src/analysis_spark.py
+  spark/bin/spark-submit --master spark://spark-master:7077 src/analysis_spark
+  py
   ```
 
   -câu 6,7

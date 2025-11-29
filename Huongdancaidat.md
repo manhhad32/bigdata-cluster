@@ -124,6 +124,11 @@ Bạn có thể thao tác với HDFS từ bất kỳ container nào.
 ```sh
 docker exec namenode hdfs dfs -mkdir -p /user/test
 ```
+- xoa :
+hdfs dfs -rm -r -skipTrash /data/*
+
+- Mở quyền ghi cho tất cả user vào thư mục /data trên HDFS
+hdfs dfs -chmod -R 777 /data
 
 **Chép file từ local vào HDFS:**
 ```sh

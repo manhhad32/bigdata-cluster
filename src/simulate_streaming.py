@@ -11,8 +11,8 @@ LOCAL_SOURCE_DIR = "/Users/nguyenmanhha/Desktop/data"
 LOCAL_DATA_REALTIME = "./realtime-data" 
 
 # --- THAM SỐ GIẢ LẬP ---
-N = 60  # Số lượng file copy mỗi lần (Batch size)
-T = 5   # Khoảng thời gian nghỉ giữa các lần copy (giây)
+N = 500  # Số lượng file copy mỗi lần (Batch size)
+T = 2   # Khoảng thời gian nghỉ giữa các lần copy (giây)
 
 def simulate_realtime_data():
     print("--- KHỞI ĐỘNG CHƯƠNG TRÌNH GIẢ LẬP STREAMING ---")
