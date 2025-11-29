@@ -57,8 +57,7 @@
   ```
   - b3: Submit lệnh Spark
   ```sh
-  spark/bin/spark-submit --master spark://spark-master:7077 src/analysis_spark
-  py
+  spark/bin/spark-submit --master spark://spark-master:7077 src/analysis_spark.py
   ```
 
   -câu 6,7

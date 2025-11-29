@@ -21,12 +21,8 @@ acc_5c = {}
 acc_5d = {}  
 
 def get_hdfs_files_via_jvm_optimized(spark, hdfs_folder):
-    """
-    Phiên bản tối ưu: Sử dụng globStatus và in tiến độ
-    """
     print(f"⏳ Đang kết nối tới NameNode để lấy danh sách file trong {hdfs_folder}...")
     start_time = time.time()
-    
     try:
         sc = spark.sparkContext
         URI = sc._gateway.jvm.java.net.URI
@@ -35,37 +31,15 @@ def get_hdfs_files_via_jvm_optimized(spark, hdfs_folder):
         conf = sc._jsc.hadoopConfiguration()
         fs = FileSystem.get(URI(NAMENODE), conf)
         
-        # TỐI ƯU 1: Dùng globStatus để lọc .csv ngay từ phía Java (Server side)
-        # Thay vì lôi hết về rồi mới lọc bằng Python
         search_path = Path(hdfs_folder + "/*.csv")
-        print(f"   -> Đang lấy file pattern: {hdfs_folder}/*.csv")
-        
-        # Bước này có thể mất 1-2 phút nếu NameNode bận
         file_statuses = fs.globStatus(search_path)
         
-        if file_statuses is None:
-            return []
+        if file_statuses is None: return []
             
-        print(f"   -> Đã nhận phản hồi từ NameNode. Đang chuyển đổi dữ liệu...")
-        
-        files = []
-        count = 0
-        total_found = len(file_statuses)
-        
-        # TỐI ƯU 2: In tiến độ để người dùng không tưởng máy bị treo
-        for status in file_statuses:
-            # Lấy đường dẫn
-            p = status.getPath().toString()
-            files.append(p)
-            
-            count += 1
-            if count % 10000 == 0:
-                print(f"      ... Đã tải được {count}/{total_found} file ...")
-                
+        files = [status.getPath().toString() for status in file_statuses]
         duration = time.time() - start_time
         print(f"✅ Hoàn tất lấy danh sách {len(files)} file trong {duration:.2f} giây.")
         return files
-
     except Exception as e:
         print(f"❌ Lỗi đọc HDFS: {e}")
         return []
@@ -94,29 +68,73 @@ def update_global_results(batch_rows):
         rev = row['Rev']
 
         acc_5a[key_prod] = acc_5a.get(key_prod, 0) + qty
-
         if ym == TARGET_MONTH:
             acc_5b[key_prod] = acc_5b.get(key_prod, 0) + qty
             acc_5d[shop_id] = acc_5d.get(shop_id, 0.0) + rev
-
         if ym.startswith(TARGET_YEAR):
             acc_5c[key_prod] = acc_5c.get(key_prod, 0.0) + rev
 
+# =========================================================
+# === HÀM VẼ BẢNG ASCII ART (ĐÃ SỬA FORMAT TIỀN) ===
+# =========================================================
+
+def draw_border(widths):
+    parts = ["-" * (w + 1) for w in widths] 
+    print("+" + "+".join(parts) + "+")
+
+def print_row(row, widths):
+    parts = []
+    for i, val in enumerate(row):
+        # Format căn trái (<) giống hình, thêm 1 khoảng trắng đệm
+        parts.append(f" {str(val):<{widths[i]-1}}") 
+    print("|" + "|".join(parts) + "|")
+
 def print_result_table(title, data_dict, top_k, val_col_name, is_shop=False):
     print(f"\n{title}")
-    print(f"{'ID':<15} | {'Name/Info':<30} | {val_col_name}")
-    print("-" * 65)
+    
     sorted_data = sorted(data_dict.items(), key=lambda x: x[1], reverse=True)[:top_k]
+    
+    table_data = []
+    if is_shop:
+        headers = ["ShopID", "ShopInfo", val_col_name]
+    else:
+        headers = ["ProductID", "ProductName", val_col_name]
+        
     for key, val in sorted_data:
+        # --- SỬA ĐỔI TẠI ĐÂY ---
+        # Format số nguyên có dấu phẩy: 98,532,722,500
+        val_display = f"{int(val):,}" 
+        
         if is_shop:
-            print(f"{str(key):<15} | {'Shop ID ' + str(key):<30} | {val:,.2f}")
+            row = [str(key), f"Shop ID {key}", val_display]
         else:
             p_id, p_name = key
-            print(f"{str(p_id):<15} | {p_name:<30} | {val:,.2f}")
+            row = [str(p_id), p_name, val_display]
+        table_data.append(row)
+
+    # Tính độ rộng cột dựa trên dữ liệu đã format (đã bao gồm dấu phẩy)
+    widths = [len(h) + 2 for h in headers]
+    
+    for row in table_data:
+        for i, val in enumerate(row):
+            w = len(str(val)) + 2
+            if w > widths[i]:
+                widths[i] = w
+
+    draw_border(widths)       
+    print_row(headers, widths) 
+    draw_border(widths)       
+    
+    for row in table_data:
+        print_row(row, widths) 
+        
+    draw_border(widths)       
+
+# =========================================================
 
 def main():
     spark = SparkSession.builder \
-        .appName("Final_Batch_Processing_Optimized") \
+        .appName("Analysis data") \
         .config("spark.driver.memory", "300m") \
         .config("spark.executor.memory", "1000m") \
         .config("spark.executor.memoryOverhead", "400m") \
@@ -127,38 +145,36 @@ def main():
     
     spark.sparkContext.setLogLevel("ERROR")
 
-    # GỌI HÀM MỚI TỐI ƯU HƠN
     all_files = get_hdfs_files_via_jvm_optimized(spark, HDFS_FOLDER)
-    
     total = len(all_files)
+    
     if total == 0:
-        print("❌ Không tìm thấy file hoặc quá trình đọc file bị lỗi.")
         spark.stop()
         return
 
-    print(f"✅ Bắt đầu xử lý {total} file theo batch (Mỗi lần {BATCH_SIZE} file)...")
+    print(f"✅ Bắt đầu xử lý {total} file...")
 
     for i in range(0, total, BATCH_SIZE):
         batch_files = all_files[i : i + BATCH_SIZE]
-        batch_id = (i // BATCH_SIZE) + 1
-        print(f"   -> Batch {batch_id}: Đang xử lý {len(batch_files)} file...")
-        
         try:
             rows = process_batch_logic(spark, batch_files)
             update_global_results(rows)
             spark.catalog.clearCache()
+            # In tiến độ đơn giản để không rối màn hình
+            sys.stdout.write(f"\r   -> Đã xử lý xong batch {(i // BATCH_SIZE) + 1}...")
+            sys.stdout.flush()
         except Exception as e:
-            print(f"   ⚠️ Lỗi batch {batch_id}: {e}")
+            print(f"\n   ⚠️ Lỗi: {e}")
 
-    print("\n" + "="*30 + " KẾT QUẢ PHÂN TÍCH " + "="*30)
+    print("\n\n" + "="*30 + " KẾT QUẢ PHÂN TÍCH " + "="*30)
     
     print_result_table(f"=== 5a. Top {K_A} sản phẩm bán chạy nhất (Toàn hệ thống) ===", 
                        acc_5a, K_A, "Total Quantity")
 
-    print_result_table(f"=== 5b. Top {K_B} sản phẩm bán chạy nhất tháng {TARGET_MONTH} ===", 
+    print_result_table(f"=== 5b. Top {K_B} sản phẩm bán chạy nhất tháng (Toàn hệ thống){TARGET_MONTH} ===", 
                        acc_5b, K_B, "Total Quantity")
 
-    print_result_table(f"=== 5c. Top 10 Doanh thu từng sản phẩm trong năm {TARGET_YEAR} ===", 
+    print_result_table(f"=== 5c. Top 10 Doanh thu từng sản phẩm trong năm (Toàn hệ thống){TARGET_YEAR} ===", 
                        acc_5c, 10, "Total Revenue")
 
     print_result_table(f"=== 5d. Top 10 Doanh thu từng Shop trong tháng {TARGET_MONTH} ===", 
