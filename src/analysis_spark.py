@@ -79,7 +79,7 @@ def update_global_results(batch_rows):
 # =========================================================
 
 def draw_border(widths):
-    parts = ["-" * (w + 1) for w in widths] 
+    parts = ["-" * w for w in widths] 
     print("+" + "+".join(parts) + "+")
 
 def print_row(row, widths):
