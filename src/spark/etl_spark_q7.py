@@ -16,11 +16,17 @@ TARGET_YEAR  = "2023"    # Năm 2023 (Dùng cho 5c)
 K_B = 3                  # Top 3 sản phẩm bán chạy (5b)
 K_C = 10                 # Top 10 sản phẩm doanh thu cao nhất (5c)
 K_D = 10                 # Top 10 shop doanh thu cao nhất (5d)
+REPORT_5A = "report_5a_top5_qty_2023"
+REPORT_5B = "report_5b_top3_qty_mar2023"
+REPORT_5C = "report_5c_top10_rev2023"
+REPORT_5D = "report_5d_top10_shop_rev_mar2023"
+APP_NAME = "Final_ETL_Question7_Final_v2"
+
 
 def main():
     # 1. Khởi tạo Spark
     spark = SparkSession.builder \
-        .appName("Final_ETL_Question7_Final_v2") \
+        .appName(APP_NAME) \
         .config("spark.sql.shuffle.partitions", "10") \
         .getOrCreate()
     
@@ -91,10 +97,10 @@ def main():
     print("--- [L]oad: Ghi kết quả vào Database ---")
 
     
-    res_5a.write.mode("overwrite").jdbc(DB_URL, "report_5a_top5_qty_2023", properties=DB_PROPS)
-    res_5b.write.mode("overwrite").jdbc(DB_URL, "report_5b_top3_qty_mar2023", properties=DB_PROPS)
-    res_5c.write.mode("overwrite").jdbc(DB_URL, "report_5c_top10_rev2023", properties=DB_PROPS)
-    res_5d.write.mode("overwrite").jdbc(DB_URL, "report_5d_top10_shop_rev_mar2023", properties=DB_PROPS)
+    res_5a.write.mode("overwrite").jdbc(DB_URL, REPORT_5A, properties=DB_PROPS)
+    res_5b.write.mode("overwrite").jdbc(DB_URL, REPORT_5B, properties=DB_PROPS)
+    res_5c.write.mode("overwrite").jdbc(DB_URL, REPORT_5C, properties=DB_PROPS)
+    res_5d.write.mode("overwrite").jdbc(DB_URL, REPORT_5D, properties=DB_PROPS)
 
     print("--- [SUCCESS] Đã ETL thành công! ---")
     spark.stop()
