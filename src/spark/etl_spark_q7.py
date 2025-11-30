@@ -14,7 +14,7 @@ DB_PROPS = {
 TARGET_MONTH = "202303"  # Tháng 3 năm 2023 (Dùng cho 5b, 5d)
 TARGET_YEAR  = "2023"    # Năm 2023 (Dùng cho 5c)
 K_B = 3                  # Top 3 sản phẩm bán chạy (5b)
-K_C = 10                 # Top 10 sản phẩm doanh thu cao nhất (5c) - MỚI
+K_C = 10                 # Top 10 sản phẩm doanh thu cao nhất (5c)
 K_D = 10                 # Top 10 shop doanh thu cao nhất (5d)
 
 def main():
