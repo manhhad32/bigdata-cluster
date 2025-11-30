@@ -21,6 +21,7 @@ REPORT_5B = "report_5b_top3_qty_mar2023"
 REPORT_5C = "report_5c_top10_rev2023"
 REPORT_5D = "report_5d_top10_shop_rev_mar2023"
 APP_NAME = "Final_ETL_Question7_Final_v2"
+WRITE_MODE = "overwrite"
 
 
 def main():
@@ -97,10 +98,10 @@ def main():
     print("--- [L]oad: Ghi kết quả vào Database ---")
 
     
-    res_5a.write.mode("overwrite").jdbc(DB_URL, REPORT_5A, properties=DB_PROPS)
-    res_5b.write.mode("overwrite").jdbc(DB_URL, REPORT_5B, properties=DB_PROPS)
-    res_5c.write.mode("overwrite").jdbc(DB_URL, REPORT_5C, properties=DB_PROPS)
-    res_5d.write.mode("overwrite").jdbc(DB_URL, REPORT_5D, properties=DB_PROPS)
+    res_5a.write.mode(WRITE_MODE).jdbc(DB_URL, REPORT_5A, properties=DB_PROPS)
+    res_5b.write.mode(WRITE_MODE).jdbc(DB_URL, REPORT_5B, properties=DB_PROPS)
+    res_5c.write.mode(WRITE_MODE).jdbc(DB_URL, REPORT_5C, properties=DB_PROPS)
+    res_5d.write.mode(WRITE_MODE).jdbc(DB_URL, REPORT_5D, properties=DB_PROPS)
 
     print("--- [SUCCESS] Đã ETL thành công! ---")
     spark.stop()
