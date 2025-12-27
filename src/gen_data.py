@@ -2,6 +2,7 @@ import csv
 import random
 import os
 import time
+import shutil
 from datetime import datetime, timedelta
 
 # --- CẤU HÌNH ---
@@ -28,8 +29,10 @@ PRODUCTS = [
 ]
 
 def generate_batch_data():
-    if not os.path.exists(LOCAL_SOURCE_DIR):
-        os.makedirs(LOCAL_SOURCE_DIR)
+    # Xóa dữ liệu cũ nếu có để đảm bảo chính xác số lượng file
+    if os.path.exists(LOCAL_SOURCE_DIR):
+        shutil.rmtree(LOCAL_SOURCE_DIR)
+    os.makedirs(LOCAL_SOURCE_DIR)
 
     total_hours_in_year = DAYS_TO_GENERATE * HOURS_PER_DAY
     avg_files_per_hour = TARGET_TOTAL_FILES / total_hours_in_year
