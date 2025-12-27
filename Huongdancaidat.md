@@ -183,3 +183,8 @@ docker restart hive-metastore
   ```sh
   spark/bin/spark-submit --master spark://spark-master:7077 src/analysis_spark.py
   ```
+
+  -Q7:
+  ```sh
+  spark/bin/spark-submit --jars opt/spark_drivers/postgresql-42.7.7.jar opt/spark_apps/etl_spark_q7.py
+  ```
