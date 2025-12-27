@@ -38,7 +38,7 @@ def main():
     spark.sql(f"""
         SELECT 
             ProductName, 
-            SUM(Amount) as TotalQuantity
+            format_number(SUM(Amount), 0) as TotalQuantity
         FROM orders
         GROUP BY ProductName
         ORDER BY TotalQuantity DESC
@@ -51,10 +51,10 @@ def main():
     spark.sql("""
         SELECT 
             ProductName, 
-            CAST(SUM(Amount * Price) AS DECIMAL(18, 2)) as TotalRevenue
+            format_number(SUM(Amount * Price), 0) as TotalRevenue
         FROM orders
         GROUP BY ProductName
-        ORDER BY TotalRevenue DESC
+        ORDER BY SUM(Amount * Price) DESC
     """).show(truncate=False)
 
     spark.stop()
