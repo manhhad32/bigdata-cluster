@@ -50,7 +50,7 @@ def process_batch_logic(spark, batch_files):
 
     df_clean = df.withColumn("FilePath", input_file_name()) \
                  .withColumn("ShopID", regexp_extract("FilePath", r"Shop-(\d+)", 1).cast("int")) \
-                 .withColumn("YearMonth", substring(col("OrderID").cast("string"), 0, 6)) \
+                 .withColumn("YearMonth", substring(col("OrderID").cast("string"), 1, 6)) \
                  .withColumn("Revenue", (col("Price") * col("Amount")) - col("Discount"))
 
     batch_agg = df_clean.groupBy("ProductID", "ProductName", "ShopID", "YearMonth") \
@@ -174,11 +174,11 @@ def main():
     print_result_table(f"=== 5b. Top {K_B} sản phẩm bán chạy nhất tháng (Toàn hệ thống){TARGET_MONTH} ===", 
                        acc_5b, K_B, "Total Quantity")
 
-    print_result_table(f"=== 5c. Top 10 Doanh thu từng sản phẩm trong năm (Toàn hệ thống){TARGET_YEAR} ===", 
-                       acc_5c, 10, "Total Revenue")
+    print_result_table(f"=== 5c. Doanh thu từng sản phẩm trong năm (Toàn hệ thống) {TARGET_YEAR} ===", 
+                       acc_5c, len(acc_5c), "Total Revenue")
 
-    print_result_table(f"=== 5d. Top 10 Doanh thu từng Shop trong tháng {TARGET_MONTH} ===", 
-                       acc_5d, 10, "Shop Revenue", is_shop=True)
+    print_result_table(f"=== 5d. Doanh thu từng Shop trong tháng {TARGET_MONTH} ===", 
+                       acc_5d, len(acc_5d), "Shop Revenue", is_shop=True)
 
     spark.stop()
 

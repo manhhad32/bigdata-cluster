@@ -1,5 +1,6 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, LongType, IntegerType, StringType, DoubleType
+from pyspark.sql.functions import input_file_name
 
 def main():
     # 1. Khởi tạo Spark Session
@@ -17,7 +18,7 @@ def main():
         StructField("ProductName", StringType()),
         StructField("Amount", IntegerType()),
         StructField("Price", DoubleType()),
-        # StructField("ShopSource", StringType()) 
+        StructField("Discount", DoubleType())
     ])
 
     # 3. Đọc dữ liệu từ HDFS
@@ -26,7 +27,8 @@ def main():
     df = spark.read \
         .schema(schema) \
         .option("header", "false") \
-        .csv("hdfs://namenode:9000/data/*.csv")
+        .csv("hdfs://namenode:9000/data/*.csv") \
+        .withColumn("FilePath", input_file_name())
 
     # 4. Tạo bảng tạm (Temporary View) để chạy SQL
     df.createOrReplaceTempView("orders")
@@ -41,21 +43,36 @@ def main():
             format_number(SUM(Amount), 0) as TotalQuantity
         FROM orders
         GROUP BY ProductName
-        ORDER BY TotalQuantity DESC
+        ORDER BY SUM(Amount) DESC
         LIMIT {K}
     """).show(truncate=False)
 
     # --- KIỂM TRA YÊU CẦU 5c: Doanh thu trên mỗi sản phẩm ---
     # Logic: Group theo tên -> Tính tổng (Amount * Price) -> Sắp xếp giảm dần
-    print("\n=== [SQL 5c] Doanh thu từng sản phẩm (toàn hệ thống) ===")
-    spark.sql("""
+    print("\n=== [SQL 5c] Doanh thu từng sản phẩm (Năm 2023) ===")
+    df_5c = spark.sql("""
         SELECT 
             ProductName, 
-            format_number(SUM(Amount * Price), 0) as TotalRevenue
+            format_number(CAST(SUM((Amount * Price) - Discount) AS DECIMAL(18, 2)), 0) as TotalRevenue
         FROM orders
+        WHERE substring(CAST(OrderID AS STRING), 1, 4) = '2023'
         GROUP BY ProductName
-        ORDER BY SUM(Amount * Price) DESC
-    """).show(truncate=False)
+        ORDER BY SUM((Amount * Price) - Discount) DESC
+    """)
+    df_5c.show(df_5c.count(), truncate=False)
+
+    # --- KIỂM TRA YÊU CẦU 5d: Doanh thu từng Shop ---
+    #print("\n=== [SQL 5d] Doanh thu từng Shop (Tháng 03/2023) ===")
+    #df_5d = spark.sql("""
+    #    SELECT 
+    #        CAST(regexp_extract(FilePath, 'Shop-(\\\\d+)', 1) AS INT) as ShopID,
+    #        format_number(CAST(SUM((Amount * Price) - Discount) AS DECIMAL(18, 2)), 0) as ShopRevenue
+    #    FROM orders
+    #    WHERE substring(CAST(OrderID AS STRING), 1, 6) = '202303'
+    #    GROUP BY ShopID
+    #    ORDER BY SUM((Amount * Price) - Discount) DESC
+    #""")
+    #df_5d.show(df_5d.count(), truncate=False)
 
     spark.stop()
 

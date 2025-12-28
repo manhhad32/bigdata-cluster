@@ -14,12 +14,10 @@ DB_PROPS = {
 TARGET_MONTH = "202303"  # Tháng 3 năm 2023 (Dùng cho 5b, 5d)
 TARGET_YEAR  = "2023"    # Năm 2023 (Dùng cho 5c)
 K_B = 3                  # Top 3 sản phẩm bán chạy (5b)
-K_C = 10                 # Top 10 sản phẩm doanh thu cao nhất (5c)
-K_D = 10                 # Top 10 shop doanh thu cao nhất (5d)
 REPORT_5A = "report_5a_top5_qty_2023"
 REPORT_5B = "report_5b_top3_qty_mar2023"
-REPORT_5C = "report_5c_top10_rev2023"
-REPORT_5D = "report_5d_top10_shop_rev_mar2023"
+REPORT_5C = "report_5c_all_rev2023"
+REPORT_5D = "report_5d_all_shop_rev_mar2023"
 APP_NAME = "Final_ETL_Question7_Final_v2"
 WRITE_MODE = "overwrite"
 
@@ -77,22 +75,19 @@ def main():
         .orderBy(desc("TotalQuantity")) \
         .limit(K_B)
 
-    # --- 5c. Top 10 Sản phẩm doanh thu cao nhất (Năm 2023) ---
-    # Cập nhật: Thêm limit(10)
-    print(f"Processing 5c (Top {K_C} Revenue in {TARGET_YEAR})...")
+    # --- 5c. Doanh thu từng sản phẩm (Năm 2023 - Toàn bộ) ---
+    print(f"Processing 5c (All Products Revenue in {TARGET_YEAR})...")
     res_5c = df_clean.filter(col("Year") == TARGET_YEAR) \
         .groupBy("ProductID", "ProductName") \
         .agg(sum("Revenue").alias("TotalRevenue")) \
-        .orderBy(desc("TotalRevenue")) \
-        .limit(K_C)
+        .orderBy(desc("TotalRevenue"))
 
-    # --- 5d. Top 10 Shop doanh thu lớn nhất (Tháng 03/2023) ---
-    print(f"Processing 5d (Top {K_D} Shops in {TARGET_MONTH})...")
+    # --- 5d. Doanh thu từng Shop (Tháng 03/2023 - Toàn bộ) ---
+    print(f"Processing 5d (All Shops Revenue in {TARGET_MONTH})...")
     res_5d = df_clean.filter(col("YearMonth") == TARGET_MONTH) \
         .groupBy("ShopID") \
         .agg(sum("Revenue").alias("ShopRevenue")) \
-        .orderBy(desc("ShopRevenue")) \
-        .limit(K_D)
+        .orderBy(desc("ShopRevenue"))
 
     # 4. [L]oad: Ghi vào PostgreSQL
     print("--- [L]oad: Ghi kết quả vào Database ---")
