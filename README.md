@@ -1,67 +1,71 @@
-# Bài tập chia làm 5 phần như sau:
+# The assignment is divided into 5 parts as follows:
 
-## PHẦN 1: CHUẨN BỊ MỘI TRƯỜNG
+## PART 1: ENVIRONMENT PREPARATION
 
-### Sử dụng Docker để triển khai các thành phần trong kiến trúc xử lý bigdata gồm:
+### Use Docker to deploy components in the Big Data processing architecture, including:
 
-- Cụm Hadoop
-  - 1 namenode(master), 2 datanode(worker)
-- Cụm Spark
-  - 1 master, 2 worker.
-- Database & Tool ETL
+- Hadoop Cluster
+  - 1 namenode (master), 2 datanodes (workers)
+- Spark Cluster
+  - 1 master, 2 workers.
+- Database & ETL Tool
   - Database: Postgres
-  - Tool ETL: Nifi
-- Cụm Hive
-  - Hive Meta store (hive-metastore, metatstore)
-  - Hive server(hive-server, hiveserve2)
+  - ETL Tool: NiFi
+- Hive Cluster
+  - Hive Metastore (hive-metastore, metastore)
+  - Hive Server (hive-server, hiveserver2)
 
-## PHẦN 2: STREAMING & ETL 
+## PART 2: STREAMING & ETL
 
-(câu 2, 3)
-- Câu 2: Streaming
-  - Nhiệm vụ: Đóng vai trò là hệ thống các cửa hàng tạo dữ liệu bán hàng lưu ở thư muc (/home/hduser/data), liên tục đẩy dữ liệu bán hàng vào /home/hduser/realtime-data ở local.
-  - file code: gen_data.py, simulate_streaming.py, 
-  - cmd:
+(Questions 2, 3)
+- Question 2: Streaming
+  - Task: Act as a system of stores generating sales data stored in the directory (`/home/hduser/data`), continuously pushing sales data to `/home/hduser/realtime-data` locally.
+  - Code files: `gen_data.py`, `simulate_streaming.py`
+  - Command:
   ```sh
-  python scr/gen_data.py
+  python src/gen_data.py
   python src/simulate_streaming.py
   ```
 
-- Câu 3: ETL - sử dụng Nifi
-  - Sư dụng Nifi để tạo flow data đưa toàn bộ file dữ liệu từ /home/hduser/realtime-data lên /data của HDFS (namenode - hadoop)
-  
-## PHẦN 3: HIVE WAREHOUSE
+- Question 3: ETL - Using NiFi
+  - Use NiFi to create a data flow that transfers all data files from `/home/hduser/realtime-data` to `/data` on HDFS (namenode - hadoop).
 
-(câu 4)
-- Sử dụng BDeaver để connect tới Hive (hive-server)
-  - Tạo bảng bằng câu lệnh trong file: src/Create_table_on_hive.sql
-  - Kiểm tra kết quả bằng: 
+## PART 3: HIVE WAREHOUSE
+
+(Question 4)
+- Use DBeaver to connect to Hive (hive-server)
+  - Create tables using the commands in the file: `src/Create_table_on_hive.sql`
+  - Verify results using:
   ```sh
   SELECT * FROM sales_db.orders LIMIT 20;
   ```
 
-## PHẦN 4: PHÂN TÍCH DỮ LIỆU (Câu 5, 6, 7)
+## PART 4: DATA ANALYSIS (Questions 5, 6, 7)
 
-(câu 5)
-- Sử dụng Spack (pySpark) để viết code tính toán phân tích theo yêu cầu - câu 5.
-- file code: src/analysis_spark.py
-- các bước run code này trên spark-master:
-  - b1: Copy file code vào trong container spark-master
-  Tạo thư mục src trên spark-master trước sau đó copy:
+(Question 5)
+- Use Spark (pySpark) to write analysis calculation code as required in question 5.
+- Code file: `src/analysis_spark.py`
+- Steps to run this code on `spark-master`:
+  - Step 1: Copy the code file into the `spark-master` container.
+  Create the `src` directory on `spark-master` first, then copy:
   ```sh
   docker cp analysis_spark.py spark-master:/src
   ```
-  - b2: Truy cập vào container Spark Master
+  - Step 2: Access the Spark Master container
   ```sh
   docker exec -it spark-master /bin/bash
   ```
-  - b3: Submit lệnh Spark
+  - Step 3: Submit the Spark command
   ```sh
   spark/bin/spark-submit --master spark://spark-master:7077 src/analysis_spark.py
   ```
 
-  -câu 6,7
+  - Questions 6, 7
 
-## PHẦN 5: BÁO CÁO (Câu 8)
+## PART 5: REPORTING (Question 8)
 
-- Sử dụng Power BI tạo các báo cáo theo yêu cầu
+- Use Power BI to create reports as required.
+  
+## Contact
+
+email: ha.nguyen.fzx@gmail.com | manhhad32@gmail.com
