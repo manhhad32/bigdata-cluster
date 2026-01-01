@@ -1,137 +1,35 @@
 # Big Data Cluster
 
-## Phiên bản cài đặt
+## Installation Versions
 
-- **Hadoop:** 3.2.1  
+- **Hadoop:** 3.2.1
 - **Spark:** 3.3.0
 
-## Truy cập giao diện web
+## Web Interface Access
 
 - Hadoop ResourceManager: [http://localhost:8080](http://localhost:8080)
 - Hadoop NameNode: [http://localhost:9870](http://localhost:9870)
 
 ---
 
-## Kiến trúc hệ thống triển khai
+## Deployment System Architecture
 
-- **1 Namenode:** "Master" của Hadoop, quản lý hệ thống file HDFS và tài nguyên YARN.
-- **3 Datanode:** "Worker" của Hadoop, chịu trách nhiệm lưu trữ dữ liệu thực tế.
-- **1 Spark Master:** "Master" của Spark, quản lý và điều phối các tác vụ.
-- **3 Spark Worker:** "Worker" của Spark, chịu trách nhiệm thực thi các tác vụ tính toán.
+- **1 Namenode:** Hadoop's "Master", managing the HDFS file system and YARN resources.
+- **3 Datanodes:** Hadoop's "Workers", responsible for actual data storage.
+- **1 Spark Master:** Spark's "Master", managing and coordinating tasks.
+- **3 Spark Workers:** Spark's "Workers", responsible for executing computation tasks.
 
-> **Lưu ý:** Để đơn giản hóa, Spark Master và Hadoop Namenode sẽ chạy trên cùng một container `master`.
+> **Note:** To simplify, the Spark Master and Hadoop Namenode will run on the same `master` container.
 
 ---
 
-## Khởi động và kiểm tra cluster
+## Starting and Checking the Cluster
 
-**Khởi động cluster:**
+**Start the cluster:**
 ```sh
 docker compose up -d
 ```
+### Contact
 
-**Kiểm tra trạng thái các container:**
-```sh
-docker ps
-```
+email: ha.nguyen.fzx@gmail.com | manhhad32@gmail.com
 
----
-
-## Làm việc với HDFS
-
-Bạn có thể thao tác với HDFS từ bất kỳ container nào.
-
-**Tạo thư mục trên HDFS:**
-```sh
-docker exec namenode hdfs dfs -mkdir -p /user/test
-```
-
-**Chép file từ local vào HDFS:**
-```sh
-# Tạo một file mẫu
-echo "Hello Big Data" > my_file.txt
-
-# Chép file vào container namenode
-docker cp my_file.txt namenode:/
-
-# Từ bên trong container, chép file vào HDFS
-docker exec namenode hdfs dfs -put /my_file.txt /user/test
-```
-
----
-
-## Dọn dẹp hệ thống
-
-**Tắt và xóa cluster, bao gồm cả volumes dữ liệu HDFS:**
-```sh
-docker compose down -v
-```
-
----
-
-## Các lệnh hữu ích khác
-
-- **Khởi động lại cluster (khi container đang dừng):**
-  ```sh
-  docker compose start
-  ```
-- **Tạm dừng cluster (không xóa):**
-  ```sh
-  docker compose stop
-  ```
-- **Tắt và xóa hoàn toàn cluster:**
-  ```sh
-  docker compose down
-  ```
-
----
-
-## Gửi tác vụ Spark lên cluster
-
-Ví dụ gửi bài toán tính số Pi lên cluster:
-
-```sh
-docker exec spark-master /spark/bin/spark-submit \
-  --class org.apache.spark.examples.SparkPi \
-  --master spark://spark-master:7077 \
-  --deploy-mode client \
-  --executor-memory 1G \
-  --total-executor-cores 3 \
-  /spark/examples/jars/spark-examples_2.12-3.3.0.jar 100
-```
-
----
-
-## Mẹo: Tìm đường dẫn lệnh trong container
-
-**Mở shell vào container:**
-```sh
-docker exec -it spark-master /bin/bash
-```
-**Tìm đường dẫn lệnh:**
-```sh
-which spark-submit
-```
-
----
-
-## Spark tương tác với HDFS
-
-Bạn có thể thao tác với HDFS từ bất kỳ container nào.
-
-**Tạo thư mục trên HDFS:**
-```sh
-docker exec namenode hdfs dfs -mkdir -p /user/test
-```
-
-**Chép file từ local vào HDFS:**
-```sh
-echo "Hello Big Data" > my_file.txt
-docker cp my_file.txt namenode:/
-docker exec namenode hdfs dfs -put /my_file.txt
-```
-
-***Sau Khi start NiFi nếu không login được bằng user/pass đã setup thì tìm giá trị default bằng cách:
-```sh
-docker compose logs nifi | grep "Generated"
-```
