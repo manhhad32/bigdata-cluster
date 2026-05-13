@@ -68,4 +68,4 @@
   
 ## Contact
 
-email: ha.nguyen.fzx@gmail.com | manhhad32@gmail.com
+email: ha.nguyen.fzx@gmail.com
